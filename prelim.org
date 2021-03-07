@@ -31,6 +31,8 @@
 #+property: header-args:R+ :results output 
 :end:
 
+#+PANDOC_OPTIONS: self-contained:t
+
 # clean output
 #+begin_src emacs-lisp
    ;(org-babel-map-src-blocks nil (org-babel-remove-result))
