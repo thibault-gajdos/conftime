@@ -43,41 +43,44 @@
 * Maniscalco (2017) 
 
 #+BEGIN_SRC R  :results none  :tangle yes  :session :exports none 
-rm(list=ls(all=TRUE))  ## efface les données
-setwd('~/thib/projects/conftime/') 
-source('~/thib/projects/tools/R_lib.r')
+  rm(list=ls(all=TRUE))  ## efface les données
+  setwd('~/thib/projects/conftime/') 
+  source('~/thib/projects/tools/R_lib.r')
 
-# * Maniscalco 2017
-data <- read_csv('data_Maniscalco_2017_expt1.csv') %>%
-    filter(!(Subj_idx %in% c(3,6,9,22))) %>%
-    filter(is.nan(RT_dec) == FALSE) %>%
-    filter(is.nan(RT_conf) == FALSE) %>%
-    mutate(acc = (Stimulus == Response)) %>%
-    filter(acc == 1)
-d.dec <- data %>%
-    select(Subj_idx, RT_dec) %>%
-    group_by(Subj_idx) %>%
-    summarise(RT_dec = quantile(RT_dec, c(1:100)/100), q =  c(1:100)/100)
-d.conf <- data %>%
-    select(Subj_idx, RT_conf) %>%
-    group_by(Subj_idx) %>%
-    summarise(RT_conf = quantile(RT_conf, c(1:100)/100), q =  c(1:100)/100)
-d <- full_join(d.dec, d.conf)
+  data <- read_csv('data_Maniscalco_2017_expt1.csv') %>%
+      filter(!(Subj_idx %in% c(3,6,9,22))) %>%
+      filter(is.nan(RT_dec) == FALSE) %>%
+      filter(is.nan(RT_conf) == FALSE) %>%
+      mutate(acc = (Stimulus == Response)) %>%
+      filter(acc == 1, RT_dec < 2, RT_conf <2)
+  d.dec <- data %>%
+      select(Subj_idx, RT_dec) %>%
+      group_by(Subj_idx) %>%
+      summarise(RT_dec = quantile(RT_dec, c(1:100)/100), q =  c(1:100)/100)
+  d.conf <- data %>%
+      select(Subj_idx, RT_conf) %>%
+      group_by(Subj_idx) %>%
+      summarise(RT_conf = quantile(RT_conf, c(1:100)/100), q =  c(1:100)/100)
+  d <- full_join(d.dec, d.conf) %>%
+    group_by(q) %>%
+    summarise(RT_conf = mean(RT_conf), RT_dec = mean(RT_dec))
 
-d.dec <- d.dec %>%
-    rename(RT = RT_dec) %>%
-    mutate(type = 'dec')
-d.conf <- d.conf %>%
+  d.dec <- data %>%
+      select(RT_dec, Subj_idx) %>%
+      rename(RT = RT_dec) %>%
+      mutate(type = 'dec')
+  d.conf <- data %>%
+    select(RT_conf, Subj_idx) %>%
     rename(RT = RT_conf) %>%
     mutate(type = 'conf')
-d.dist <- rbind(d.dec,d.conf)
+  d.dist <- rbind(d.dec, d.conf)
 #+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file maniscalco_density.png :exports results 
-plot <- ggplot(data = d.dist, mapping = aes(x = RT, colour = type)) +
-    geom_density()+ 
-    facet_wrap(~ Subj_idx, scales = 'free')
-plot
+  plot <- ggplot(data = d.dist, mapping = aes(x = RT, colour = type)) +
+    geom_density() +
+    facet_wrap(~Subj_idx, scale = 'free')   
+  plot
 #+END_SRC
 
 #+RESULTS:
@@ -87,8 +90,7 @@ plot
 #+BEGIN_SRC R  :results output graphics :file maniscalco_qqplot.png :exports results 
 plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
     geom_line() +
-    geom_abline(aes(slope = 1, intercept = 0), linetype = 2) +
-    facet_wrap(~ Subj_idx, scales = 'free')
+    geom_abline(aes(slope = 1, intercept = 0), linetype = 2)
 plot
 #+END_SRC
 
@@ -99,36 +101,40 @@ plot
 * Gherman  (2018) 
 
 #+BEGIN_SRC R  :results none  :tangle yes  :session :exports none 
-data <- read_csv('data_Gherman_2018.csv') %>%
-    filter(is.nan(RT_dec) == FALSE) %>%
-    filter(is.nan(RT_conf) == FALSE) %>%
-    filter(Excluded_subj == 0) %>%
-    mutate(acc = (Stimulus == Response)) %>%
-    filter(acc == 1)
-d.dec <- data %>%
-    select(Subj_idx, RT_dec) %>%
-    group_by(Subj_idx) %>%
-    summarise(RT_dec = quantile(RT_dec, c(1:100)/100), q =  c(1:100)/100)
-d.conf <- data %>%
-    select(Subj_idx, RT_conf) %>%
-    group_by(Subj_idx) %>%
-    summarise(RT_conf = quantile(RT_conf, c(1:100)/100), q =  c(1:100)/100)
-d <- full_join(d.dec, d.conf)
+  data <- read_csv('data_Gherman_2018.csv') %>%
+      filter(is.nan(RT_dec) == FALSE) %>%
+      filter(is.nan(RT_conf) == FALSE) %>%
+      filter(Excluded_subj == 0) %>%
+      mutate(acc = (Stimulus == Response)) %>%
+      filter(acc == 1, RT_conf < 2, RT_dec < 2)
+  d.dec <- data %>%
+	select(Subj_idx, RT_dec) %>%
+	group_by(Subj_idx) %>%
+	summarise(RT_dec = quantile(RT_dec, c(1:100)/100), q =  c(1:100)/100)
+  d.conf <- data %>%
+	select(Subj_idx, RT_conf) %>%
+	group_by(Subj_idx) %>%
+	summarise(RT_conf = quantile(RT_conf, c(1:100)/100), q =  c(1:100)/100)
+  d <- full_join(d.dec, d.conf) %>%
+      group_by(q) %>%
+      summarise(RT_conf = mean(RT_conf), RT_dec = mean(RT_dec))
 
-d.dec <- d.dec %>%
-    rename(RT = RT_dec) %>%
-    mutate(type = 'dec')
-d.conf <- d.conf %>%
-    rename(RT = RT_conf) %>%
-    mutate(type = 'conf')
-d.dist <- rbind(d.dec,d.conf)
+  d.dec <- data %>%
+	select(RT_dec, Subj_idx) %>%
+	rename(RT = RT_dec) %>%
+	mutate(type = 'dec')
+  d.conf <- data %>%
+      select(RT_conf, Subj_idx) %>%
+      rename(RT = RT_conf) %>%
+      mutate(type = 'conf')
+  d.dist <- rbind(d.dec, d.conf)
 #+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file gherman_density.png :exports results 
-plot <- ggplot(data = d.dist, mapping = aes(x = RT, colour = type)) +
-    geom_density()+ 
-    facet_wrap(~ Subj_idx, scales = 'free')
-plot
+  plot <- ggplot(data = d.dist, mapping = aes(x = RT, colour = type)) +
+    geom_density() +
+    facet_wrap(~Subj_idx, scale = 'free')   
+  plot
 #+END_SRC
 
 #+RESULTS:
@@ -138,8 +144,7 @@ plot
 #+BEGIN_SRC R  :results output graphics :file gherman_qqplot.png :exports results 
 plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
     geom_line() +
-    geom_abline(aes(slope = 1, intercept = 0), linetype = 2) +
-    facet_wrap(~ Subj_idx, scales = 'free')
+    geom_abline(aes(slope = 1, intercept = 0), linetype = 2)
 plot
 #+END_SRC
 
@@ -154,8 +159,8 @@ plot
       filter(is.nan(RT_dec) == FALSE) %>%
       filter(is.nan(RT_conf) == FALSE) %>%
       mutate(acc = (Stimulus == Response)) %>%
-      filter(acc == 1)
-  d.dec <- data %>%
+      filter(acc == 1, RT_dec < 2, RT_conf < 2)
+ d.dec <- data %>%
       select(Subj_idx, RT_dec) %>%
       group_by(Subj_idx) %>%
       summarise(RT_dec = quantile(RT_dec, c(1:100)/100), q =  c(1:100)/100)
@@ -163,22 +168,26 @@ plot
       select(Subj_idx, RT_conf) %>%
       group_by(Subj_idx) %>%
       summarise(RT_conf = quantile(RT_conf, c(1:100)/100), q =  c(1:100)/100)
-  d <- full_join(d.dec, d.conf)
+  d <- full_join(d.dec, d.conf) %>%
+    group_by(q) %>%
+    summarise(RT_conf = mean(RT_conf), RT_dec = mean(RT_dec))
 
-  d.dec <- d.dec %>%
+  d.dec <- data %>%
+      select(RT_dec, Subj_idx) %>%
       rename(RT = RT_dec) %>%
       mutate(type = 'dec')
-  d.conf <- d.conf %>%
-      rename(RT = RT_conf) %>%
-      mutate(type = 'conf')
-  d.dist <- rbind(d.dec,d.conf)
+  d.conf <- data %>%
+    select(RT_conf, Subj_idx) %>%
+    rename(RT = RT_conf) %>%
+    mutate(type = 'conf')
+  d.dist <- rbind(d.dec, d.conf)
 #+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file hainguerlot_density.png :exports results 
-plot <- ggplot(data = d.dist, mapping = aes(x = RT, colour = type)) +
-    geom_density()+ 
-    facet_wrap(~ Subj_idx, scales = 'free')
-plot
+  plot <- ggplot(data = d.dist, mapping = aes(x = RT, colour = type)) +
+    geom_density() +
+    facet_wrap(~Subj_idx, scale = 'free')
+  plot
 #+END_SRC
 
 #+RESULTS:
@@ -188,8 +197,7 @@ plot
 #+BEGIN_SRC R  :results output graphics :file hainguerlot_qqplot.png :exports results 
 plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
     geom_line() +
-    geom_abline(aes(slope = 1, intercept = 0), linetype = 2) +
-    facet_wrap(~ Subj_idx, scales = 'free')
+    geom_abline(aes(slope = 1, intercept = 0), linetype = 2)
 plot
 #+END_SRC
 
@@ -209,7 +217,7 @@ plot
     filter(Condition == 1) %>%
     filter(RT_dec < 2, RT_conf <2) 
 
-  d.dec <- data %>%
+ d.dec <- data %>%
       select(Subj_idx, RT_dec) %>%
       group_by(Subj_idx) %>%
       summarise(RT_dec = quantile(RT_dec, c(1:100)/100), q =  c(1:100)/100)
@@ -217,21 +225,25 @@ plot
       select(Subj_idx, RT_conf) %>%
       group_by(Subj_idx) %>%
       summarise(RT_conf = quantile(RT_conf, c(1:100)/100), q =  c(1:100)/100)
-  d <- full_join(d.dec, d.conf)
+  d <- full_join(d.dec, d.conf) %>%
+    group_by(q) %>%
+    summarise(RT_conf = mean(RT_conf), RT_dec = mean(RT_dec))
 
-  d.dec <- d.dec %>%
+  d.dec <- data %>%
+      select(RT_dec, Subj_idx) %>%
       rename(RT = RT_dec) %>%
       mutate(type = 'dec')
-  d.conf <- d.conf %>%
-      rename(RT = RT_conf) %>%
-      mutate(type = 'conf')
-  d.dist <- rbind(d.dec,d.conf)
+  d.conf <- data %>%
+    select(RT_conf, Subj_idx) %>%
+    rename(RT = RT_conf) %>%
+    mutate(type = 'conf')
+  d.dist <- rbind(d.dec, d.conf)
 #+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file Locke_density.png :exports results 
   plot <- ggplot(data = d.dist, mapping = aes(x = RT, colour = type)) +
-      geom_density()+ 
-      facet_wrap(~ Subj_idx, scales = 'free')
+    geom_density() +
+    facet_wrap(~ Subj_idx, scale = 'free') 
   plot
 #+END_SRC
 
@@ -242,8 +254,7 @@ plot
 #+BEGIN_SRC R  :results output graphics :file Locke_qqplot.png :exports results 
 plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
     geom_line() +
-    geom_abline(aes(slope = 1, intercept = 0), linetype = 2) +
-    facet_wrap(~ Subj_idx, scales = 'free')
+    geom_abline(aes(slope = 1, intercept = 0), linetype = 2) 
 plot
 #+END_SRC 
 
