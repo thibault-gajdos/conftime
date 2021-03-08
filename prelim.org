@@ -42,6 +42,10 @@
 
 * Maniscalco (2017) 
 
+Circular patches of white noise were presented to the left and right of fixation for 33 ms. A sinusoidal grating was embedded in either the left or right patch of noise. The subject's task was to indicate which patch contained the grating, left or right, with a keypress.
+
+After entering the stimulus discrimination response, subjects rated confidence in the accuracy of their response on a scale of 1 to 4, with 4 being highest. No absolute meaning was attributed to the numbers on the scale, but rather, they indicated relative levels of confidence for stimulus judgments made in this particular experiment. Thus, subjects were encouraged to use all parts of the confidence scale at least some of the time. 
+
 #+BEGIN_SRC R  :results none  :tangle yes  :session :exports none 
   rm(list=ls(all=TRUE))  ## efface les données
   setwd('~/thib/projects/conftime/') 
@@ -100,6 +104,11 @@ plot
 
 * Gherman  (2018) 
 
+Stimulus type: Random dot kinematogram, with coherent motion either leftwards or rightwards (1=left; 2=right).
+
+Confidence scale: post-decisional confidence ratings, using a discrete 9-point scale (1=guess; 9=certain)
+
+
 #+BEGIN_SRC R  :results none  :tangle yes  :session :exports none 
   data <- read_csv('data_Gherman_2018.csv') %>%
       filter(is.nan(RT_dec) == FALSE) %>%
@@ -154,6 +163,13 @@ plot
 
 * Hainguerlot  (2018) 
 
+- Stimulus: On each trial, after a 250ms fixation cross, two sets of about 100 dots were simultaneously presented for 700ms, one on the left side and one on the right side of the computer screen (stimulus is coded as 1 if the left set contained more dots and 2 if the right set contained more dots). 
+Participants had to indicate which set contained more dots (subject's response is coded as 1 if responded "left" and 2 if responded "right"). After the response, the inter-trial interval was jittered between 0.5s and 1.5s. 
+
+ Confidence scale: Each response was followed by a confidence rating, in which participants indicated their subjective belief that their response just given was correct, on a 6 steps scale ranging from 50% confident (i.e. guess) to 100% confident, in 6 steps of 10% (confidence answer is coded from 0.5 for 50% confident to 1 for 100% confident).
+
+- Response device: Participants indicated their response by pressing the corresponding arrow on the keyboard (left or right). Participants indicated their confidence rating by using the numerical keys on the top-left of the keyboard. 
+
 #+BEGIN_SRC R  :results none  :tangle yes  :session :exports none 
   data <- read_csv('data_Hainguerlot_2018.csv') %>%
       filter(is.nan(RT_dec) == FALSE) %>%
@@ -205,7 +221,71 @@ plot
 [[file:hainguerlot_qqplot.png]]
 
 
+
+* Hainguerlot  (unpub) 
+
+- Stimulus: On each trial, after a 250ms fixation cross, two sets of about 100 dots were simultaneously presented for 700ms, one on the left side and one on the right side of the computer screen (stimulus is coded as 1 if the left set contained more dots and 2 if the right set contained more dots). Participants had to indicate which set contained more dots (subject's response is coded as 1 if responded "left" and 2 if responded "right"). After the response, the inter-trial interval was jittered between 0.5s and 1.5s. 
+
+- Confidence scale: Each response was followed by a confidence rating, in which participants indicated their subjective belief that their response just given was correct, on a 6 steps scale ranging from 50% confident (i.e. guess) to 100% confident, in 6 steps of 10% (confidence answer is coded from 0.5 for 50% confident to 1 for 100% confident)
+
+#+BEGIN_SRC R  :results none  :tangle yes  :session :exports none 
+  data <- read_csv('data_Hainguerlot_unpub.csv') %>%
+      filter(is.nan(RT_dec) == FALSE) %>%
+      filter(is.nan(RT_conf) == FALSE) %>%
+      mutate(acc = (Stimulus == Response)) %>%
+      filter(acc == 1, RT_dec < 2, RT_conf < 2)
+ d.dec <- data %>%
+      select(Subj_idx, RT_dec) %>%
+      group_by(Subj_idx) %>%
+      summarise(RT_dec = quantile(RT_dec, c(1:100)/100), q =  c(1:100)/100)
+  d.conf <- data %>%
+      select(Subj_idx, RT_conf) %>%
+      group_by(Subj_idx) %>%
+      summarise(RT_conf = quantile(RT_conf, c(1:100)/100), q =  c(1:100)/100)
+  d <- full_join(d.dec, d.conf) %>%
+    group_by(q) %>%
+    summarise(RT_conf = mean(RT_conf), RT_dec = mean(RT_dec))
+
+  d.dec <- data %>%
+      select(RT_dec, Subj_idx) %>%
+      rename(RT = RT_dec) %>%
+      mutate(type = 'dec')
+  d.conf <- data %>%
+    select(RT_conf, Subj_idx) %>%
+    rename(RT = RT_conf) %>%
+    mutate(type = 'conf')
+  d.dist <- rbind(d.dec, d.conf)
+#+END_SRC
+
+#+BEGIN_SRC R  :results output graphics :file hainguerlot_unpub_density.png :exports results 
+  plot <- ggplot(data = d.dist, mapping = aes(x = RT, colour = type)) +
+    geom_density() +
+    facet_wrap(~Subj_idx, scale = 'free')
+  plot
+#+END_SRC
+
+#+RESULTS:
+[[file:hainguerlot_unpub_density.png]]
+
+
+#+BEGIN_SRC R  :results output graphics :file hainguerlot_unoub_qqplot.png :exports results 
+plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
+    geom_line() +
+    geom_abline(aes(slope = 1, intercept = 0), linetype = 2)
+plot
+#+END_SRC
+
+#+RESULTS:
+[[file:hainguerlot_unoub_qqplot.png]]
+
+
 * Locke  (2020) 
+
+Gabor patch tilted slightly left (Stimulus=0) or right (Stimulus=1) of vertical. Response is left (Response=0) or right (Response=1). Training/thresholding (Training=1; Session=0; Condition=0) was performed for each participant, then fixed for the main experiment (Training=0; Session>1; Condition>1). Difficulty is the absolute orientation magnitude displayed in degrees. Gabor spatial frequency was 2 cycles/deg, peak contrast 10%, Gaussian envelope (.5 deg SD), randomized phase.
+
+Subjective confidence in probability correct, either low (Confidence=0) or high (Confidence=1). Confidence was not extrinsically rewarded (e.g., with points). No confidence judgments during Training.
+
+Correct/incorrect feedback was provided on every trial
 
 #+BEGIN_SRC R  :results none  :tangle yes  :session :exports none
   data <- read_csv('data_Locke_2020.csv') %>%
@@ -260,3 +340,4 @@ plot
 
 #+RESULTS:
 [[file:Locke_qqplot.png]]
+
