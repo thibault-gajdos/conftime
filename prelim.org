@@ -64,7 +64,7 @@ After entering the stimulus discrimination response, subjects rated confidence i
   d.conf <- data %>%
       select(Subj_idx, RT_conf) %>%
       group_by(Subj_idx) %>%
-      summarise(RT_conf = quantile(RT_conf, c(1:9)/10), q =  c(1:9)/10)
+      summarise(RT_conf = quantile(RT_conf, c(1:9)/10), q =  c(1:9)/10) 
   d <- full_join(d.dec, d.conf) %>%
     group_by(q) %>%
     summarise(RT_conf = mean(RT_conf), RT_dec = mean(RT_dec))
@@ -78,6 +78,10 @@ After entering the stimulus discrimination response, subjects rated confidence i
     rename(RT = RT_conf) %>%
     mutate(type = 'conf')
   d.dist <- rbind(d.dec, d.conf)
+
+  d.corr <- data %>%
+    group_by(Subj_idx) %>%
+    summarise(corr = cor(RT_conf,RT_dec, method="pearson"))
 #+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file maniscalco_density.png :exports results 
@@ -91,6 +95,7 @@ After entering the stimulus discrimination response, subjects rated confidence i
 [[file:maniscalco_density.png]]
 
 
+
 #+BEGIN_SRC R  :results output graphics :file maniscalco_qqplot.png :exports results 
   plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
     geom_line() +
@@ -102,6 +107,18 @@ After entering the stimulus discrimination response, subjects rated confidence i
 #+RESULTS:
 [[file:maniscalco_qqplot.png]]
 
+#+BEGIN_SRC R  :results output graphics :file maniscalco_corr.png :exports results 
+  plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
+    geom_point() +
+    geom_hline(aes(yintercept = mean(corr)), color="blue") +
+    ylim(-1,1) +
+    annotate(geom = 'text', x = 15, y = 0.8, label = paste('mean correlation = ', round(mean(d.corr$corr),2),sep = ''))
+
+ plot
+#+END_SRC
+
+#+RESULTS:
+[[file:maniscalco_corr.png]]
 
 * Gherman  (2018) 
 
@@ -138,6 +155,10 @@ Confidence scale: post-decisional confidence ratings, using a discrete 9-point s
       rename(RT = RT_conf) %>%
       mutate(type = 'conf')
   d.dist <- rbind(d.dec, d.conf)
+
+  d.corr <- data %>%
+    group_by(Subj_idx) %>%
+    summarise(corr = cor(RT_conf,RT_dec, method="pearson"))
 #+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file gherman_density.png :exports results 
@@ -163,6 +184,18 @@ plot
 #+RESULTS:
 [[file:gherman_qqplot.png]]
 
+#+BEGIN_SRC R  :results output graphics :file gherman.png :exports results 
+  plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
+    geom_point() +
+    geom_hline(aes(yintercept = mean(corr)), color="blue") +
+    ylim(-1,1) +
+    annotate(geom = 'text', x = 15, y = 0.8, label = paste('mean correlation = ', round(mean(d.corr$corr),2),sep = ''))
+
+ plot
+#+END_SRC
+
+#+RESULTS:
+[[file:gherman.png]]
 
 * Hainguerlot  (2018) 
 
@@ -200,6 +233,10 @@ Participants had to indicate which set contained more dots (subject's response i
     rename(RT = RT_conf) %>%
     mutate(type = 'conf')
   d.dist <- rbind(d.dec, d.conf)
+
+  d.corr <- data %>%
+    group_by(Subj_idx) %>%
+    summarise(corr = cor(RT_conf,RT_dec, method="pearson"))
 #+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file hainguerlot_density.png :exports results 
@@ -224,7 +261,18 @@ plot
 
 #+RESULTS:
 [[file:hainguerlot_qqplot.png]]
+#+BEGIN_SRC R  :results output graphics :file hainguerlot_2018_corr.png :exports results 
+  plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
+    geom_point() +
+    geom_hline(aes(yintercept = mean(corr)), color="blue") +
+    ylim(-1,1) +
+    annotate(geom = 'text', x = 15, y = 0.8, label = paste('mean correlation = ', round(mean(d.corr$corr),2),sep = ''))
 
+ plot
+#+END_SRC
+
+#+RESULTS:
+[[file:hainguerlot_2018_corr.png]]
 
 
 * Hainguerlot  (unpub) 
@@ -260,6 +308,10 @@ plot
     rename(RT = RT_conf) %>%
     mutate(type = 'conf')
   d.dist <- rbind(d.dec, d.conf)
+
+  d.corr <- data %>%
+    group_by(Subj_idx) %>%
+    summarise(corr = cor(RT_conf,RT_dec, method="pearson"))
 #+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file hainguerlot_unpub_density.png :exports results 
@@ -284,7 +336,18 @@ plot
 
 #+RESULTS:
 [[file:hainguerlot_unoub_qqplot.png]]
+#+BEGIN_SRC R  :results output graphics :file hainguerlot_unpub_corr.png :exports results 
+  plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
+    geom_point() +
+    geom_hline(aes(yintercept = mean(corr)), color="blue") +
+    ylim(-1,1) +
+    annotate(geom = 'text', x = 15, y = 0.8, label = paste('mean correlation = ', round(mean(d.corr$corr),2),sep = ''))
 
+ plot
+#+END_SRC
+
+#+RESULTS:
+[[file:hainguerlot_unpub_corr.png]]
 
 * Locke  (2020) 
 
@@ -325,6 +388,10 @@ Correct/incorrect feedback was provided on every trial
     rename(RT = RT_conf) %>%
     mutate(type = 'conf')
   d.dist <- rbind(d.dec, d.conf)
+
+  d.corr <- data %>%
+    group_by(Subj_idx) %>%
+    summarise(corr = cor(RT_conf,RT_dec, method="pearson"))
 #+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file Locke_density.png :exports results 
@@ -349,4 +416,15 @@ plot
 
 #+RESULTS:
 [[file:Locke_qqplot.png]]
+#+BEGIN_SRC R  :results output graphics :file Locke_corr.png :exports results 
+  plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
+    geom_point() +
+    geom_hline(aes(yintercept = mean(corr)), color="blue") +
+    ylim(-1,1) +
+    annotate(geom = 'text', x = 6, y = 0.8, label = paste('mean correlation = ', round(mean(d.corr$corr),2),sep = ''))
 
+ plot
+#+END_SRC
+
+#+RESULTS:
+[[file:Locke_corr.png]]
