@@ -35,7 +35,7 @@
 
 # clean output
 #+begin_src emacs-lisp
-   ;(org-babel-map-src-blocks nil (org-babel-remove-result))
+  ;(org-babel-map-src-blocks nil (org-babel-remove-result))
 #+end_src
 
 #+RESULTS:
@@ -261,6 +261,7 @@ plot
 
 #+RESULTS:
 [[file:hainguerlot_qqplot.png]]
+
 #+BEGIN_SRC R  :results output graphics :file hainguerlot_2018_corr.png :exports results 
   plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
     geom_point() +
@@ -336,6 +337,7 @@ plot
 
 #+RESULTS:
 [[file:hainguerlot_unoub_qqplot.png]]
+
 #+BEGIN_SRC R  :results output graphics :file hainguerlot_unpub_corr.png :exports results 
   plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
     geom_point() +
@@ -416,6 +418,7 @@ plot
 
 #+RESULTS:
 [[file:Locke_qqplot.png]]
+
 #+BEGIN_SRC R  :results output graphics :file Locke_corr.png :exports results 
   plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
     geom_point() +
@@ -428,3 +431,74 @@ plot
 
 #+RESULTS:
 [[file:Locke_corr.png]]
+
+* Simulation
+
+We simulate two distribution: a gaussian (mean = 300, sd = 60) and weibull (mean = 300, shape = 8). Although very different, when considering deciles, qqplot look almost linear... Caution thus required!
+
+#+BEGIN_SRC R  :results none  :tangle yes  :session :exports none
+  x_norm <- rnorm(500, mean = 300, sd = 150) 
+  x_weib <- rweibull(500, shape = 15, scale = 300)
+  data <- data.frame(norm = x_norm, weib = x_weib)
+  dec_norm <- quantile(x_norm, c(1:9)/10)
+  dec_weib <- quantile(x_weib, c(1:9)/10)
+  d <- data.frame(q = c(1:9)/10, norm = dec_norm, weib = dec_weib)
+#+END_SRC
+
+#+BEGIN_SRC R  :results output graphics :file sim_qqplot.png :exports results 
+  plot <- ggplot(data = d, mapping = aes(x = dec_norm, y = dec_weib)) + 
+    geom_line() +
+    geom_point() +
+    geom_smooth(method='lm', se = FALSE)  
+  plot
+#+END_SRC 
+
+#+RESULTS:
+[[file:sim_qqplot.png]]
+
+
+
+
+#+BEGIN_SRC R  :results none  :tangle yes  :session :exports none
+  data <- data.frame(norm = x_norm, weib = x_weib)
+  d.dist <- data %>%
+    select(-weib) %>%
+    mutate(type = 'norm') %>%
+    rename(x = norm)
+  d.dist2 <- data %>%
+    select(-norm) %>%
+    mutate(type = 'weib') %>%
+    rename(x = weib)
+  data <- rbind(d.dist, d.dist2)
+#+END_SRC
+
+#+BEGIN_SRC R  :results output graphics :file sim_density.png :exports results 
+  plot <- ggplot(data = data, mapping = aes(x = x, colour = type)) +
+    geom_density() 
+  plot
+#+END_SRC
+
+#+RESULTS:
+[[file:sim_density.png]]
+
+This is clear if you look at a qqplot with centiles.
+
+#+BEGIN_SRC R  :results none  :tangle yes  :session :exports code
+  data <- data.frame(norm = x_norm, weib = x_weib)
+  dec_norm <- quantile(x_norm, c(1:100)/100)
+  dec_weib <- quantile(x_weib, c(1:100)/100)
+  d <- data.frame(q = c(1:100)/100, norm = dec_norm, weib = dec_weib)
+#+END_SRC
+
+#+BEGIN_SRC R  :results output graphics :file sim_qqplot2.png :exports results 
+  plot <- ggplot(data = d, mapping = aes(x = dec_norm, y = dec_weib)) + 
+    geom_line() +
+    geom_point() +
+    geom_smooth(method='lm', se = FALSE)  
+  plot
+#+END_SRC 
+
+
+[[file:sim_qqplot2.png]]
+
+
