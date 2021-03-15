@@ -25,7 +25,7 @@
 :Options_R:
 #+property: :session *R*
 #+property: header-args:R :exports results
-#+property: header-args:R :eval never-export
+# #+property: header-args:R :eval never-export
 #+property: header-args:R+ :tangle yes
 #+property: header-args:R+ :session
 #+property: header-args:R+ :results output 
@@ -34,11 +34,13 @@
 #+PANDOC_OPTIONS: self-contained:t
 
 # clean output
-#+begin_src emacs-lisp
-  ;(org-babel-map-src-blocks nil (org-babel-remove-result))
+#+begin_src emacs-lisp :exports none
+  (org-babel-map-src-blocks nil (org-babel-remove-result))
 #+end_src
 
 #+RESULTS:
+: 1165
+
 
 * Maniscalco (2017) 
 
@@ -50,6 +52,7 @@ After entering the stimulus discrimination response, subjects rated confidence i
   rm(list=ls(all=TRUE))  ## efface les données
   setwd('~/thib/projects/conftime/') 
   source('~/thib/projects/tools/R_lib.r')
+  library('pander')
 
   data <- read_csv('data_Maniscalco_2017_expt1.csv') %>%
       filter(!(Subj_idx %in% c(3,6,9,22))) %>%
@@ -95,7 +98,6 @@ After entering the stimulus discrimination response, subjects rated confidence i
 [[file:maniscalco_density.png]]
 
 
-
 #+BEGIN_SRC R  :results output graphics :file maniscalco_qqplot.png :exports results 
   plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
     geom_line() +
@@ -104,8 +106,11 @@ After entering the stimulus discrimination response, subjects rated confidence i
   plot
 #+END_SRC
 
-#+RESULTS:
-[[file:maniscalco_qqplot.png]]
+#+BEGIN_SRC R :results output  :exports results
+  pandoc.table(d, style = 'rmarkdown')
+#+END_SRC
+
+
 
 #+BEGIN_SRC R  :results output graphics :file maniscalco_corr.png :exports results 
   plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
@@ -113,12 +118,15 @@ After entering the stimulus discrimination response, subjects rated confidence i
     geom_hline(aes(yintercept = mean(corr)), color="blue") +
     ylim(-1,1) +
     annotate(geom = 'text', x = 15, y = 0.8, label = paste('mean correlation = ', round(mean(d.corr$corr),2),sep = ''))
-
- plot
+print(plot)
 #+END_SRC
 
 #+RESULTS:
 [[file:maniscalco_corr.png]]
+
+#+BEGIN_SRC R :results output  :exports results
+  pandoc.table(d.corr, style = 'rmarkdown')
+#+END_SRC
 
 * Gherman  (2018) 
 
@@ -141,7 +149,7 @@ Confidence scale: post-decisional confidence ratings, using a discrete 9-point s
   d.conf <- data %>%
 	select(Subj_idx, RT_conf) %>%
 	group_by(Subj_idx) %>%
-	summarise(RT_conf = quantile(RT_conf, c(1:100)/100), q =  c(1:100)/100)
+	summarise(RT_conf = quantile(RT_conf, c(1:9)/10), q =  c(1:0)/100)
   d <- full_join(d.dec, d.conf) %>%
       group_by(q) %>%
       summarise(RT_conf = mean(RT_conf), RT_dec = mean(RT_dec))
@@ -168,9 +176,6 @@ Confidence scale: post-decisional confidence ratings, using a discrete 9-point s
   plot
 #+END_SRC
 
-#+RESULTS:
-[[file:gherman_density.png]]
-
 
 #+BEGIN_SRC R  :results output graphics :file gherman_qqplot.png :exports results 
 plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
@@ -178,11 +183,11 @@ plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) +
   geom_point() +
   geom_smooth(method='lm', se = FALSE)  
 plot
-
 #+END_SRC
 
-#+RESULTS:
-[[file:gherman_qqplot.png]]
+#+BEGIN_SRC R :results output  :exports results
+  pandoc.table(d, style = 'rmarkdown')
+#+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file gherman.png :exports results 
   plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
@@ -194,8 +199,9 @@ plot
  plot
 #+END_SRC
 
-#+RESULTS:
-[[file:gherman.png]]
+#+BEGIN_SRC R :results output  :exports results
+  pandoc.table(d.corr, style = 'rmarkdown')
+#+END_SRC
 
 * Hainguerlot  (2018) 
 
@@ -246,9 +252,6 @@ Participants had to indicate which set contained more dots (subject's response i
   plot
 #+END_SRC
 
-#+RESULTS:
-[[file:hainguerlot_density.png]]
-
 
 #+BEGIN_SRC R  :results output graphics :file hainguerlot_qqplot.png :exports results 
 plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
@@ -259,8 +262,9 @@ plot
 
 #+END_SRC
 
-#+RESULTS:
-[[file:hainguerlot_qqplot.png]]
+#+BEGIN_SRC R :results output  :exports results
+  pandoc.table(d, style = 'rmarkdown')
+#+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file hainguerlot_2018_corr.png :exports results 
   plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
@@ -272,9 +276,9 @@ plot
  plot
 #+END_SRC
 
-#+RESULTS:
-[[file:hainguerlot_2018_corr.png]]
-
+#+BEGIN_SRC R :results output  :exports results
+  pandoc.table(d.corr, style = 'rmarkdown')
+#+END_SRC
 
 * Hainguerlot  (unpub) 
 
@@ -322,9 +326,6 @@ plot
   plot
 #+END_SRC
 
-#+RESULTS:
-[[file:hainguerlot_unpub_density.png]]
-
 
 #+BEGIN_SRC R  :results output graphics :file hainguerlot_unoub_qqplot.png :exports results 
 plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
@@ -332,11 +333,11 @@ plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) +
   geom_point() +
   geom_smooth(method='lm', se = FALSE)  
 plot
-
 #+END_SRC
 
-#+RESULTS:
-[[file:hainguerlot_unoub_qqplot.png]]
+#+BEGIN_SRC R :results output  :exports results
+  pandoc.table(d, style = 'rmarkdown')
+#+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file hainguerlot_unpub_corr.png :exports results 
   plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
@@ -348,8 +349,9 @@ plot
  plot
 #+END_SRC
 
-#+RESULTS:
-[[file:hainguerlot_unpub_corr.png]]
+#+BEGIN_SRC R :results output  :exports results
+  pandoc.table(d.corr, style = 'rmarkdown')
+#+END_SRC
 
 * Locke  (2020) 
 
@@ -403,9 +405,6 @@ Correct/incorrect feedback was provided on every trial
   plot
 #+END_SRC
 
-#+RESULTS:
-[[file:Locke_density.png]]
-
 
 #+BEGIN_SRC R  :results output graphics :file Locke_qqplot.png :exports results 
 plot <- ggplot(data = d, mapping = aes(x = RT_dec, y = RT_conf)) + 
@@ -416,8 +415,9 @@ plot
 
 #+END_SRC 
 
-#+RESULTS:
-[[file:Locke_qqplot.png]]
+#+BEGIN_SRC R :results output  :exports results
+  pandoc.table(d, style = 'rmarkdown')
+#+END_SRC
 
 #+BEGIN_SRC R  :results output graphics :file Locke_corr.png :exports results 
   plot <- ggplot(data = d.corr, mapping = aes(x = Subj_idx, y = corr)) +
@@ -429,8 +429,9 @@ plot
  plot
 #+END_SRC
 
-#+RESULTS:
-[[file:Locke_corr.png]]
+#+BEGIN_SRC R :results output  :exports results
+  pandoc.table(d.corr, style = 'rmarkdown')
+#+END_SRC
 
 * Simulation
 
@@ -452,9 +453,6 @@ We simulate two distribution: a gaussian (mean = 300, sd = 60) and weibull (mean
     geom_smooth(method='lm', se = FALSE)  
   plot
 #+END_SRC 
-
-#+RESULTS:
-[[file:sim_qqplot.png]]
 
 
 
@@ -478,9 +476,6 @@ We simulate two distribution: a gaussian (mean = 300, sd = 60) and weibull (mean
   plot
 #+END_SRC
 
-#+RESULTS:
-[[file:sim_density.png]]
-
 This is clear if you look at a qqplot with centiles.
 
 #+BEGIN_SRC R  :results none  :tangle yes  :session :exports code
@@ -497,8 +492,5 @@ This is clear if you look at a qqplot with centiles.
     geom_smooth(method='lm', se = FALSE)  
   plot
 #+END_SRC 
-
-
-[[file:sim_qqplot2.png]]
 
 
